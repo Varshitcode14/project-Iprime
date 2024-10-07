@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Inspector Dashboard</h2>
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Inspector Details</h5>
+        <p class="card-text">Email: {{ current_user.email }}</p>
+        <p class="card-text">Inspector ID: {{ current_user.inspector_id }}</p>
+        <p class="card-text">Qualifications: {{ current_user.qualifications }}</p>
+    </div>
+</div>
+
+<h3>Registered Institutes</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Email</th>
+            <th>Government Verification Number</th>
+            <th>Phone</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for institute in institutes %}
+        <tr>
+            <td>{{ institute.email }}</td>
+            <td>{{ institute.gov_verification_number }}</td>
+            <td>{{ institute.phone }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
