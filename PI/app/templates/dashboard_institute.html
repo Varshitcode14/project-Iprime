@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Institute Dashboard</h2>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Institute Details</h5>
+                    <form id="instituteForm">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="name" value="{{ current_user.name }}" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" value="{{ current_user.email }}" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="gov_verification_number" class="form-label">Government Verification Number</label>
+                            <input type="text" class="form-control" id="gov_verification_number" value="{{ current_user.gov_verification_number }}" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" value="{{ current_user.phone }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Address</label>
+                            <input type="text" class="form-control" id="address" name="address" value="{{ current_user.address }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="website" class="form-label">Website</label>
+                            <input type="url" class="form-control" id="website" name="website" value="{{ current_user.website }}">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Info</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Update Faculty Information</h5>
+                    <form id="facultyForm">
+                        <div id="facultyList"></div>
+                        <button type="button" class="btn btn-secondary mt-2" id="addFaculty">Add Faculty</button>
+                        <button type="submit" class="btn btn-primary mt-2">Update Faculty Data</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <h3 class="mb-3">Students</h3>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>Government ID</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td>{{ student.email }}</td>
+                    <td>{{ student.gov_id }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const facultyList = document.getElementById('facultyList');
+    const addFacultyBtn = document.getElementById('addFaculty');
+    const facultyForm = document.getElementById('facultyForm');
+    const instituteForm = document.getElementById('instituteForm');
+    let facultyData = JSON.parse('{{ faculty_data | tojson | safe }}');
+
+    function renderFacultyList() {
+        facultyList.innerHTML = '';
+        facultyData.forEach((faculty, index) => {
+            const facultyDiv = document.createElement('div');
+            facultyDiv.className = 'mb-3 border p-3';
+            facultyDiv.innerHTML = `
+                <input type="text" class="form-control mb-2" placeholder="Name" value="${faculty.name || ''}" required>
+                <input type="text" class="form-control mb-2" placeholder="Qualification" value="${faculty.qualification || ''}" required>
+                <input type="text" class="form-control mb-2" placeholder="Specialization" value="${faculty.specialization || ''}" required>
+                <button type="button" class="btn btn-danger btn-sm remove-faculty" data-index="${index}">Remove</button>
+            `;
+            facultyList.appendChild(facultyDiv);
+        });
+    }
+
+    addFacultyBtn.addEventListener('click', function() {
+        facultyData.push({ name: '', qualification: '', specialization: '' });
+        renderFacultyList();
+    });
+
+    facultyList.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-faculty')) {
+            const index = parseInt(e.target.getAttribute('data-index'), 10);
+            facultyData.splice(index, 1);
+            renderFacultyList();
+        }
+    });
+
+    facultyForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const facultyInputs = facultyList.querySelectorAll('div');
+        facultyData = Array.from(facultyInputs).map(div => ({
+            name: div.querySelector('input:nth-child(1)').value,
+            qualification: div.querySelector('input:nth-child(2)').value,
+            specialization: div.querySelector('input:nth-child(3)').value
+        }));
+
+        fetch('/update_faculty_data', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ faculty_data: facultyData }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Faculty data updated successfully');
+            } else {
+                alert('Error updating faculty data: ' + data.message);
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            alert('An error occurred while updating faculty data');
+        });
+    });
+
+    instituteForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(instituteForm);
+
+        fetch('/update_institute_info', {
+            method: 'POST',
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Institute information updated successfully');
+            } else {
+                alert('Error updating institute information: ' + data.message);
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            alert('An error occurred while updating institute information');
+        });
+    });
+
+    renderFacultyList();
+});
+</script>
+{% endblock %}

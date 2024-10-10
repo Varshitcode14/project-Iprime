@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Institute Announcements</h2>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Post New Announcement</h5>
+            <form method="POST">
+                <div class="mb-3">
+                    <label for="title" class="form-label">Title</label>
+                    <input type="text" class="form-control" id="title" name="title" required>
+                </div>
+                <div class="mb-3">
+                    <label for="content" class="form-label">Content</label>
+                    <textarea class="form-control" id="content" name="content" rows="3" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Post Announcement</button>
+            </form>
+        </div>
+    </div>
+
+    <h3 class="mb-3">Recent Announcements</h3>
+    {% for announcement in announcements %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="card-title">{{ announcement.title }}</h5>
+            <p class="card-text">{{ announcement.content }}</p>
+            <p class="card-text"><small class="text-muted">Posted on {{ announcement.created_at.strftime('%Y-%m-%d %H:%M') }}</small></p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

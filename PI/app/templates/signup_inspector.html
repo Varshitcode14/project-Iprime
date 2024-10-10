@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Inspector Sign Up</h2>
+<form method="POST">
+    <div class="mb-3">
+        <label for="email" class="form-label">Email address</label>
+        <input type="email" class="form-control" id="email" name="email" required>
+    </div>
+    <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input type="password" class="form-control" id="password" name="password" required>
+    </div>
+    <div class="mb-3">
+        <label for="inspector_id" class="form-label">Inspector ID</label>
+        <input type="text" class="form-control" id="inspector_id" name="inspector_id" required>
+    </div>
+    <div class="mb-3">
+        <label for="qualifications" class="form-label">Qualifications</label>
+        <textarea class="form-control" id="qualifications" name="qualifications" rows="3" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Sign Up</button>
+</form>
+{% endblock %}

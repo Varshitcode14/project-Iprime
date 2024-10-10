@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Inspector Dashboard</h2>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Inspector Details</h5>
+                    <p class="card-text"><strong>Email:</strong> {{ current_user.email }}</p>
+                    <p class="card-text"><strong>Inspector ID:</strong> {{ current_user.inspector_id }}</p>
+                    <p class="card-text"><strong>Qualifications:</strong> {{ current_user.qualifications }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Search Institutes</h5>
+                    <input type="text" id="searchInput" class="form-control mb-3" placeholder="Search by name, email, or verification number">
+                    <div id="searchResults"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h3 class="mb-3">Institutes</h3>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Verification Number</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for institute in institutes %}
+                <tr>
+                    <td>{{ institute.name }}</td>
+                    <td>{{ institute.email }}</td>
+                    <td>{{ institute.gov_verification_number }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary view-details" data-institute-id="{{ institute.id }}">View Details</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="modal fade" id="instituteDetailsModal" tabindex="-1" aria-labelledby="instituteDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="instituteDetailsModalLabel">Institute Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="instituteDetailsContent">
+                    <!-- Institute details will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+    const instituteDetailsModal = new bootstrap.Modal(document.getElementById('instituteDetailsModal'));
+    const instituteDetailsContent = document.getElementById('instituteDetailsContent');
+
+    searchInput.addEventListener('input', function() {
+        const query = this.value.trim();
+        if (query.length > 2) {
+            fetch(`/search_institutes?query=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    searchResults.innerHTML = '';
+                    data.forEach(institute => {
+                        const div = document.createElement('div');
+                        div.className = 'mb-2';
+                        div.innerHTML = `
+                            <strong>${institute.name}</strong><br>
+                            ${institute.email}<br>
+                            <button class="btn btn-sm btn-primary view-details" data-institute-id="${institute.id}">View Details</button>
+                        `;
+                        searchResults.appendChild(div);
+                    });
+                });
+        } else {
+            searchResults.innerHTML = '';
+        }
+    });
+
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('view-details')) {
+            const instituteId = e.target.getAttribute('data-institute-id');
+            fetch(`/institute/${instituteId}`)
+                .then(response => response.text())
+                .then(data => {
+                    instituteDetailsContent.innerHTML = data;
+                    instituteDetailsModal.show();
+                });
+        }
+    });
+});
+</script>
+{% endblock %}

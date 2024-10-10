@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Student Dashboard</h2>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Student Details</h5>
+                    <p class="card-text"><strong>Email:</strong> {{ current_user.email }}</p>
+                    <p class="card-text"><strong>Government ID:</strong> {{ current_user.gov_id }}</p>
+                    <p class="card-text"><strong>Institute:</strong> {{ current_user.institute.name }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Faculty Information</h5>
+                    {% if faculty_data %}
+                        <ul class="list-group">
+                        {% for faculty in faculty_data %}
+                            <li class="list-group-item">
+                                <strong>{{ faculty.name }}</strong><br>
+                                Qualification: {{ faculty.qualification }}<br>
+                                Specialization: {{ faculty.specialization }}
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No faculty information available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card mt-4">
+        <div class="card-body">
+            <h5 class="card-title">Announcements</h5>
+            <div id="announcements"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/get_announcements')
+        .then(response => response.json())
+        .then(data => {
+            const announcementsDiv = document.getElementById('announcements');
+            if (data.length === 0) {
+                announcementsDiv.innerHTML = '<p>No announcements available.</p>';
+            } else {
+                const announcementsList = data.map(announcement => `
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">${announcement.title}</h5>
+                            <p class="card-text">${announcement.content}</p>
+                            <p class="card-text"><small class="text-muted">Posted on: ${new Date(announcement.created_at).toLocaleString()}</small></p>
+                        </div>
+                    </div>
+                `).join('');
+                announcementsDiv.innerHTML = announcementsList;
+            }
+        })
+        .catch(error => console.error('Error fetching announcements:', error));
+});
+</script>
+{% endblock %}
